@@ -1,69 +1,86 @@
 <?php
-require_once "productos.php";
 
-class ProductoService{
-    private $tokenCorrecto = "123456";
-    private $producto;
+require_once "conexion.php";
+
+class Servidor {
+    private $db;
 
     public function __construct() {
-        $this->producto = new Producto();
+        $this->db = (new Conexion()) ->getConexion();
     }
 
-    public function validarAcceso() {
-        if (!isset($_GET['token']) || $_GET['token'] !== $this->tokenCorrecto) {
-            $this->enviarError("Acceso no autorizado");
+    public function autenticar($token) {
+        $tokenValido = "mi_token_secreto";
+        return $token === $tokenValido;
+    }
+
+    public function obtenerProductos($token){
+        if(!$this->autenticar($token)){
+            return[];
         }
+        $query = $this->db->query("SELECT id, nombre, precio, stock FROM productos");
+        $productos = $query->fetchALL(PDO::FETCH_ASSOC);
+
+        return array_map(function($productos){
+            return [
+                'id' => (int)$productos['id'],
+                'nombre' =>$productos['nombre'],
+                'precio' => (float)$productos['precio'],
+                'stock' => (int)$productos['stock'],
+            ];
+        }, $productos);
     }
 
-    public function obtenerProductos() {
-        $nombre = isset($_GET['nombre']) ? $_GET['nombre'] : null;
-        $precio_mayor_que = isset($_GET['precio_mayor_que']) ? $_GET['precio_mayor_que'] : null;
-
-        $resultado = $this->producto->obtenerProductos($nombre, $precio_mayor_que);
-        $this->generarXML($resultado);
-    }
-    private function enviarError($mensaje, $dom = null, $root = null) {
-        if (!$dom) {
-            header('Content-Type: application/xml; charset=UTF-8');
-            $dom = new DOMDocument("1.0", "UTF-8");
-            $dom->formatOutput = true;
-            $root = $dom->createElement("error");
-            $dom->appendChild($root);
-        }
-
-        $mensajeNode = $dom->createElement("mensaje", $mensaje);
-        $root->appendChild($mensajeNode);
-
-        echo $dom->saveXML();
-        exit;
+    public function obtenerProducto ($id, $token) {
+        if(!$this->autenticar($token)){
+            return[];
     }
 
-    private function generarXML($resultado) {
-        header('Content-Type: application/xml; charset=UTF-8');
-        $dom = new DOMDocument("1.0", "UTF-8");
-        $dom->formatOutput = true;
-        $root = $dom->createElement("productos");
-        $dom->appendChild($root);
+    $stmt = $this->db->query("SELECT id, nombre, precio, stock FROM productos");
+    $stmt->execute([$id]);
+    $productos = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($resultado->num_rows > 0) {
-            while ($fila = $resultado->fetch_assoc()) {
-                $producto = $dom->createElement("producto");
-                $producto->setAttribute("id", $fila["id"]);
-                $producto->setAttribute("nombre", $fila["nombre"]);
-                $producto->setAttribute("precio", $fila["precio"]);
-                $producto->setAttribute("stock", $fila["stock"]);
-                $root->appendChild($producto);
-            }
-        } else {
-            $this->enviarError("No se encontraron productos", $dom, $root);
-        }
-
-        echo $dom->saveXML();
+    if(!$productos) {
+        return[];
     }
-    
+
+    return [
+        'id' => (int)$productos['id'],
+                'nombre' =>$productos['nombre'],
+                'precio' => (float)$productos['precio'],
+                'stock' => (int)$productos['stock'],
+    ];
+  }
+
+  public function crearProducto($nombre, $precio, $stock, $token) {
+    if (!$this->autenticar($token)) {
+        return [];
+    }
+    $stmt = $this->db->prepare("INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)");
+    $stmt->execute([$nombre, $precio, $stock]);
+    return ["mensaje" => "Producto creado con éxito."];
 }
-    $service = new sProductoService();
-    $service->validarAcceso();
-    $service->obtenerProductos();
 
-?>    
+public function actualizarProducto($id, $nombre, $precio, $stock, $token) {
+    if (!$this->autenticar($token)) {
+        return [];
+    }
+    $stmt = $this->db->prepare("UPDATE productos SET nombre = ?, precio = ?, stock = ? WHERE id = ?");
+    $stmt->execute([$nombre, $precio, $stock, $id]);
+    return ["mensaje" => "Producto actualizado con éxito."];
+}
+
+public function eliminarProducto($nombre, $token) {
+    if (!$this->autenticar($token)) {
+        return [];
+    }
+    $stmt = $this->db->prepare("DELETE FROM productos WHERE nombre = ?");
+    $stmt->execute([$nombre]);
+    return ["mensaje" => "Producto '$nombre' eliminado con éxito."];
+}
+
+}
+
+
+
+?>

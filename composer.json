@@ -1,0 +1,17 @@
+{
+    "name": "yulit/trabajo",
+    "autoload": {
+        "psr-4": {
+            "Yulit\\Trabajo\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Juan Sebastian Cardona",
+            "email": "cardonajuansebastian511@gmail.com"
+        }
+    ],
+    "require": {
+        "econea/nusoap": "^0.9.18"
+    }
+}

@@ -1,0 +1,45 @@
+consumo de postman
+crear un porducto
+headers SOAPAction: Servidor.crearProducto
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="http://localhost/webservices/tema5/servicio.php">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <urn:Servidor.crearProducto>
+            <nombre>Nombre del Producto</nombre>
+            <precio>precio</precio>
+            <stock>stock</stock>
+            <token>mi_token_secreto</token>
+        </urn:Servidor.crearProducto>
+    </soapenv:Body>
+</soapenv:Envelope>
+
+
+actualizar o editar o producto 
+heardes SOAPAction: Servidor.actualizarProducto
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="http://localhost/webservices/tema5/servicio.php">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <urn:Servidor.actualizarProducto>
+            <id>1</id>
+            <nombre>Nuevo Nombre</nombre>
+            <precio>89.99</precio>
+            <stock>15</stock>
+            <token>mi_token_secreto</token>
+        </urn:Servidor.actualizarProducto>
+    </soapenv:Body>
+</soapenv:Envelope>
+
+eliminar un producto
+hearders SOAPAction: Servidor.eliminarProducto
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="http://localhost/webservices/tema5/servicio.php">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <urn:Servidor.eliminarProducto>
+            <nombre>lapiz azul</nombre>
+            <token>mi_token_secreto</token>
+        </urn:Servidor.eliminarProducto>
+    </soapenv:Body>
+</soapenv:Envelope>
